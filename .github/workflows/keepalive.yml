@@ -1,0 +1,15 @@
+# กันไม่ให้ Supabase (แผนฟรี) หยุดโปรเจกต์เมื่อไม่มีคนใช้ 7 วัน
+# ต้องตั้ง Repository secrets: SUPABASE_URL และ SUPABASE_ANON_KEY (ค่าเดียวกับใน config.js)
+name: keep-supabase-awake
+on:
+  schedule:
+    - cron: "17 2 */3 * *"   # ทุก 3 วัน เวลา 09:17 น. (เวลาไทย)
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          echo "auth:  $(curl -sS -o /dev/null -w '%{http_code}' "${{ secrets.SUPABASE_URL }}/auth/v1/health" -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}")"
+          echo "db:    $(curl -sS -o /dev/null -w '%{http_code}' -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/rpc/ep_ping" -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" -H "Content-Type: application/json" -d '{}')"
